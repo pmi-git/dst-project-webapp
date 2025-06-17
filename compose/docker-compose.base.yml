@@ -10,7 +10,7 @@ services:
       - wordpress_data:/var/www/html
       - ../docker/wordpress-php/wp-config.php:/var/www/html/wp-config.php
     environment:
-      WORDPRESS_DB_HOST: postgres
+      WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
