@@ -15,5 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   define( 'ABSPATH', __DIR__ . '/' );
 }
 
+$table_prefix = 'wp_';
+
 // Inclusion du cœur WP
 require_once ABSPATH . 'wp-settings.php';
