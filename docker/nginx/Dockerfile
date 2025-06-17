@@ -11,5 +11,5 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 # Santé du conteneur
-HEALTHCHECK --interval=30s --timeout=5s \
-  CMD wget -q --spider http://localhost || exit 1
+#HEALTHCHECK --interval=30s --timeout=5s \
+#  CMD wget -q --spider http://localhost || exit 1
