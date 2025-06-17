@@ -16,7 +16,7 @@ services:
       WORDPRESS_DB_PASSWORD: wppass
       WP_DEBUG: 1
     depends_on:
-      - postgres
+      - mysql
 
   nginx:
     build:
@@ -29,18 +29,18 @@ services:
     depends_on:
       - wordpress-php
 
-  postgres:
-    image: postgres:15
-    container_name: postgres
+  mysql:
+    image: mariadb:10.6
+    container_name: mysql
     restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
     environment:
-      POSTGRES_DB: wordpress
-      POSTGRES_USER: wpuser
-      POSTGRES_PASSWORD: wppass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass
+      MYSQL_ROOT_PASSWORD: rootpass
 
 volumes:
   wordpress_data:
-  postgres_data:
+  mysql_data:
