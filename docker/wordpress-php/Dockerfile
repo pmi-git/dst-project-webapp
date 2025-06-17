@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     git \
+    libpq-dev \
     libzip-dev \
-    && docker-php-ext-install mysqli zip \
+    && docker-php-ext-install pdo mysqli zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-enable mysqli
