@@ -10,7 +10,9 @@ define( 'WP_CACHE', getenv('WP_CACHE') ?: false );
 define( 'FS_METHOD', 'direct' );
 
 // Absolut path vers WordPress
-define( 'ABSPATH', __DIR__ . '/' );
+if ( ! defined( 'ABSPATH' ) ) {
+  define( 'ABSPATH', __DIR__ . '/' );
+}
 
 // Inclusion du cœur WP
 require_once ABSPATH . 'wp-settings.php';
