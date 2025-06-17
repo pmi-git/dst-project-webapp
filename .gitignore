@@ -1,0 +1,6 @@
+.env*
+k8s/base/secrets/*.yaml
+__pycache__/
+*.log
+*.swp
+.DS_Store
