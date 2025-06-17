@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
 
 # Téléchargement de WordPress (version stable)
 ENV WP_VERSION=6.5.3
-ENV WP_SHA1=3bced9899f0113edb15bfe3e5a2a5d1878eb4442
+ENV WP_SHA1=8e4950d39990a2c200a7745d44d32b176baa5ac5
 
 RUN curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WP_VERSION}.tar.gz" \
     && echo "$WP_SHA1 *wordpress.tar.gz" | sha1sum -c - \
