@@ -10,8 +10,11 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     git \
+    libzip-dev \
     && docker-php-ext-install mysqli zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-enable mysqli
 
 # Téléchargement de WordPress (version stable)
 ENV WP_VERSION=6.5.3
