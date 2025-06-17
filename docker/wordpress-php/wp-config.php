@@ -8,3 +8,9 @@ define( 'WP_DEBUG', getenv('WP_DEBUG') ?: false );
 define( 'WP_CACHE', getenv('WP_CACHE') ?: false );
 
 define( 'FS_METHOD', 'direct' );
+
+// Absolut path vers WordPress
+define( 'ABSPATH', __DIR__ . '/' );
+
+// Inclusion du cœur WP
+require_once ABSPATH . 'wp-settings.php';
