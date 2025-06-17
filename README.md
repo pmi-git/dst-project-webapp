@@ -63,6 +63,7 @@ Ce projet vise à construire une infrastructure DevOps moderne, modulaire et sca
 ├── .env.dev / .env.prod     # Fichiers d'environnement (non commités)
 ├── .github/workflows/       # GitHub Actions (CI/CD)
 └── README.md
+```
 
 ---
 
