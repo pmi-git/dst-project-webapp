@@ -32,7 +32,6 @@ Ce projet vise à construire une infrastructure DevOps moderne, modulaire et sca
     | Redis (cache)     | Redis (sessions)
     | PostgreSQL        | PostgreSQL
 
-
 ---
 
 ## 📁 Structure du projet
@@ -65,8 +64,9 @@ Ce projet vise à construire une infrastructure DevOps moderne, modulaire et sca
 ├── .github/workflows/       # GitHub Actions (CI/CD)
 └── README.md
 
+---
 
-🚀 Lancer l’environnement de dev
+## 🚀 Lancer l’environnement de dev
 
 Pré-requis : Docker et Docker Compose
 cd compose/
@@ -74,8 +74,9 @@ docker-compose -f docker-compose.base.yml -f dev/docker-compose.override.yml up 
 Pour la production :
 docker-compose -f docker-compose.base.yml -f prod/docker-compose.override.yml up -d
 
+---
 
-☸️ Déploiement Kubernetes
+## ☸️ Déploiement Kubernetes
 
 🧪 En local avec K3s
 kubectl apply -k k8s/overlays/dev
@@ -87,8 +88,9 @@ Secrets sécurisés via Sealed Secrets
 Déploiement automatisé par GitHub Actions
 Infrastructure provisionnée via CloudFormation
 
+---
 
-🔐 Gestion des secrets
+## 🔐 Gestion des secrets
 
 Le projet utilise Bitnami Sealed Secrets :
 
@@ -96,8 +98,9 @@ Les secrets sont chiffrés et versionnés en toute sécurité
 Les secrets scellés sont différents selon l’environnement (dev, prod)
 Voir k8s/overlays/*/sealed-secrets/ pour les exemples
 
+---
 
-✨ En cours...
+## ✨ En cours...
 
  Dockerfiles de chaque composant
  Setup Sealed Secrets dans K3s
@@ -105,8 +108,9 @@ Voir k8s/overlays/*/sealed-secrets/ pour les exemples
  Manifests Kubernetes complets
  Helm chart optionnel pour packaging
 
+---
 
-👥 Auteurs
+## 👥 Auteurs
 
 Patrick Miviere
 Collaboration étudiante – Projet académique DevOps
