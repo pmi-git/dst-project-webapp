@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+
+  wordpress-php:
+    build:
+      context: ../docker/wordpress-php
+    container_name: wordpress-php
+    volumes:
+      - wordpress_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: postgres
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WP_DEBUG: 1
+    depends_on:
+      - postgres
+
+  nginx:
+    build:
+      context: ../docker/nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      - wordpress-php
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_DB: wordpress
+      POSTGRES_USER: wpuser
+      POSTGRES_PASSWORD: wppass
+
+volumes:
+  wordpress_data:
+  postgres_data:
