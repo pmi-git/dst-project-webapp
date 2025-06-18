@@ -40,32 +40,36 @@ L'objectif est d'évoluer progressivement d'un environnement local Dockerisé ve
 ## 📁 Structure du projet
 
 ```bash
-├── docker/                  # Dockerfiles par composant
+dst-project-webapp/
+├── docker/
 │   ├── nginx/
+│   │   └── default.conf
 │   ├── wordpress-php/
-│   ├── prestashop-php/
-│   ├── redis/
-│   └── postgres/
+│   │   ├── Dockerfile
+│   │   ├── wp-config.php
+│   │   └── conf.d/
+│   │       └── mysqli.ini
+│   └── mysql/                # (optionnel si on le customise plus tard)
 │
-├── compose/                 # Docker Compose pour dev/prod
-│   ├── docker-compose.base.yml
-│   ├── dev/
-│   └── prod/
+├── compose/
+│   ├── docker-compose.base.yml      # commun à tous les envs
+│   ├── docker-compose.dev.yml       # spécifique local (SSL auto-signé)
+│   ├── docker-compose.intg.yml      # intg EKS + Let's Encrypt
+│   └── docker-compose.prod.yml      # prod EKS + Let's Encrypt
 │
-├── k8s/                     # Manifests Kubernetes
-│   ├── base/
-│   └── overlays/
-│       ├── dev/
-│       └── prod/
+├── ssl/                     # pour le dev local
+│   ├── self-signed.crt
+│   └── self-signed.key
 │
-├── tools/                   # Scripts et setup local
-│   ├── k3s-local-env.md
-│   └── sealed-secrets/
+├── scripts/
+│   ├── generate-cert.sh     # SSL auto-signé
+│   ├── rebuild.sh           # rebuild complet
+│   ├── pause-stack.sh       # stop + sleep
+│   └── deploy.sh            # (placeholder futur CI/CD)
 │
-├── scripts/                 # SQL init, healthchecks, etc.
-├── .env.dev / .env.prod     # Fichiers d'environnement (non commités)
-├── .github/workflows/       # GitHub Actions (CI/CD)
+├── TODO.md
 └── README.md
+
 ```
 
 ---
