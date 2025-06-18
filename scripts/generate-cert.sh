@@ -13,4 +13,4 @@ openssl req -x509 -nodes -days 365 \
   -out $CERT_DIR/self-signed.crt \
   -subj "/C=FR/ST=Local/L=DevCity/O=PMI/CN=$DOMAIN"
 
-echo "✅ Certificat généré dans $CERT_DIR/"
+echo "Certificat généré dans $CERT_DIR/"
