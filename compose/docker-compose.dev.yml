@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  nginx:
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ../docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ../ssl:/etc/nginx/ssl
+      - wordpress_data:/var/www/html
+
+  wordpress-php:
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WP_DEBUG: "true"
+      WP_CACHE: "false"
+    volumes:
+      - ../docker/wordpress-php/wp-config.php:/var/www/html/wp-config.php
+      - wordpress_data:/var/www/html
+
+  mysql:
+    volumes:
+      - mysql_data:/var/lib/mysql

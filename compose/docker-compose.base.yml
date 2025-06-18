@@ -1,45 +1,25 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
-  wordpress-php:
-    build:
-      context: ../docker/wordpress-php
-    container_name: wordpress-php
-    volumes:
-      - wordpress_data:/var/www/html
-      - ../docker/wordpress-php/wp-config.php:/var/www/html/wp-config.php
-    environment:
-      WORDPRESS_DB_HOST: mysql
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DB_USER: wpuser
-      WORDPRESS_DB_PASSWORD: wppass
-      WP_DEBUG: 1
-    depends_on:
-      - mysql
-
   nginx:
+    image: compose-nginx
     build:
       context: ../docker/nginx
-    container_name: nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - wordpress_data:/var/www/html
     depends_on:
       - wordpress-php
 
+  wordpress-php:
+    image: compose-wordpress-php
+    build:
+      context: ../docker/wordpress-php
+
   mysql:
     image: mariadb:10.6
-    container_name: mysql
-    restart: unless-stopped
-    volumes:
-      - mysql_data:/var/lib/mysql
     environment:
+      MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wpuser
       MYSQL_PASSWORD: wppass
-      MYSQL_ROOT_PASSWORD: rootpass
 
 volumes:
   wordpress_data:
