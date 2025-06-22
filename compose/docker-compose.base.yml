@@ -12,14 +12,13 @@ services:
     image: compose-wordpress-php
     build:
       context: ../docker/wordpress-php
+    env_file:
+      - .env
 
   mysql:
     image: mariadb:10.6
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
-      MYSQL_PASSWORD: wppass
+    env_file:
+      - .env
 
 volumes:
   wordpress_data:
