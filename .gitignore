@@ -1,6 +1,32 @@
-.env*
-k8s/base/secrets/*.yaml
+# Node / frontend (au cas où)
+node_modules/
+dist/
+build/
+
+# Python (si jamais)
 __pycache__/
+*.pyc
+
+# Logs
 *.log
-*.swp
+logs/
+*.gz
+
+# Docker
+*.pid
+.env
+ssl/self-signed.*
+
+# Certificats / clés
+*.crt
+*.key
+
+# IDE & OS
 .DS_Store
+.idea/
+.vscode/
+
+# Backup / swap files
+*~
+*.bak
+*.swp
