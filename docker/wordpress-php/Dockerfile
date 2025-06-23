@@ -26,6 +26,11 @@ RUN curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WP_VERSION}
     && tar -xzf wordpress.tar.gz -C /var/www/html --strip-components=1 \
     && rm wordpress.tar.gz
 
+# Plugin Redis Object Cache
+RUN curl -o redis-cache.zip -fSL https://downloads.wordpress.org/plugin/redis-cache.latest-stable.zip \
+    && unzip redis-cache.zip -d /var/www/html/wp-content/plugins \
+    && rm redis-cache.zip
+
 # Configuration WordPress (config déjà montée par volume ou git-clonée si besoin)
 COPY --chown=www-data:www-data ./wp-config.php /var/www/html/wp-config.php
 
@@ -45,3 +50,8 @@ EXPOSE 9000
 
 # Commande par défaut
 CMD ["php-fpm"]
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
