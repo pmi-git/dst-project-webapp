@@ -20,14 +20,14 @@ Seules les valeurs dynamiques (FQDN, secrets) sont autorisées à différer.
 
 ## 🧪 Environnement `dev` (local Docker/K3s)
 
-- [ ] Générer certificat SSL auto-signé (`generate-cert.sh`)
-- [ ] Ajouter `docker-compose.dev.yml`
-  - [ ] Activer SSL (`https://localhost:8443`)
-  - [ ] Monter config en volume
-  - [ ] Variables `WP_DEBUG`, `WP_CACHE`, etc.
-  - [ ] Mount des logs pour inspection locale
+- [x] Générer certificat SSL auto-signé (`generate-cert.sh`)
+- [x] Ajouter `docker-compose.dev.yml`
+  - [x] Activer SSL (`https://localhost:8443`)
+  - [x] Monter config en volume
+  - [x] Variables `WP_DEBUG`, `WP_CACHE`, etc.
+  - [x] Mount des logs pour inspection locale
 - [ ] Définir un domaine local (`wordpress.local` ou autre)
-- [ ] Créer script d’initialisation `setup-dev.sh`
+- [x] Créer script d’initialisation `setup-dev.sh`
 
 ---
 
