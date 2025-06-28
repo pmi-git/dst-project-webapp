@@ -1,0 +1,23 @@
+services:
+  pts-nginx:
+    ports:
+      - "8444:443"
+    volumes:
+      - ../ssl:/etc/nginx/certs
+      - ./logs/pts-nginx:/var/log/nginx
+
+  pts-php:
+    environment:
+      PS_DEV_MODE: 1
+      PS_INSTALL_AUTO: 1
+    volumes:
+      - ../prestashop:/var/www/html
+      - ./logs/pts-php:/var/log/php
+
+  pts-mariadb:
+    volumes:
+      - ./data/pts-mariadb:/var/lib/mysql
+
+  pts-redis:
+    volumes:
+      - ./data/pts-redis:/data
