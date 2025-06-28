@@ -4,8 +4,8 @@ echo "État de l’environnement DEV (containers + health)..."
 echo ""
 
 docker-compose \
-  -f compose/docker-compose.base.yml \
-  -f compose/docker-compose.dev.yml \
+  -f compose/docker-compose.wp.base.yml \
+  -f compose/docker-compose.wp.dev.yml \
   ps --services --filter "status=running"
 
 echo ""

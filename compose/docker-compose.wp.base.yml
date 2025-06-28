@@ -1,28 +1,27 @@
 version: "3.8"
 
 services:
-  nginx:
+  wp-nginx:
     image: compose-nginx
     build:
       context: ../docker/nginx
     depends_on:
-      - wordpress-php
+      - wp-php
 
-  wordpress-php:
+  wp-php:
     image: compose-wordpress-php
     build:
       context: ../docker/wordpress-php
     env_file:
       - ../.env
 
-  mysql:
+  wp-mysql:
     image: mariadb:10.6
     env_file:
       - ../.env
 
-  redis:
+  wp-redis:
     image: redis:7
-    container_name: redis
     ports:
       - "6379:6379"  # facultatif sauf pour debug local
     volumes:

@@ -3,6 +3,6 @@
 echo "Suivi des logs en temps réel pour l'environnement DEV..."
 
 docker-compose \
-  -f compose/docker-compose.base.yml \
-  -f compose/docker-compose.dev.yml \
+  -f compose/docker-compose.wp.base.yml \
+  -f compose/docker-compose.wp.dev.yml \
   logs -f --tail=50
