@@ -1,11 +1,20 @@
 <?php
-define( 'DB_NAME', getenv('WORDPRESS_DB_NAME') ?: 'wordpress' );
-define( 'DB_USER', getenv('WORDPRESS_DB_USER') ?: 'wpuser' );
-define( 'DB_PASSWORD', getenv('WORDPRESS_DB_PASSWORD') ?: 'wppass' );
-define( 'DB_HOST', getenv('WORDPRESS_DB_HOST') ?: 'mysql' );
+// Vérification des variables d'environnement critiques
+$required_env = ['WORDPRESS_DB_NAME', 'WORDPRESS_DB_USER', 'WORDPRESS_DB_PASSWORD', 'WORDPRESS_DB_HOST'];
+foreach ($required_env as $var) {
+    if (!getenv($var)) {
+        die("❌ Configuration error: missing environment variable '$var'");
+    }
+}
+
+// Configuration base de données
+define( 'DB_NAME', getenv('WORDPRESS_DB_NAME') );
+define( 'DB_USER', getenv('WORDPRESS_DB_USER') );
+define( 'DB_PASSWORD', getenv('WORDPRESS_DB_PASSWORD') );
+define( 'DB_HOST', getenv('WORDPRESS_DB_HOST') );
 
 // Redis config
-define('WP_REDIS_HOST', getenv('WP_REDIS_HOST') ?: 'redis');
+define('WP_REDIS_HOST', getenv('WP_REDIS_HOST') ?: 'wp-redis');
 define('WP_REDIS_PORT', getenv('WP_REDIS_PORT') ?: 6379);
 define('WP_REDIS_DISABLED', false);
 
