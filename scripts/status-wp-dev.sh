@@ -10,4 +10,4 @@ docker-compose \
 
 echo ""
 echo "Vérification des statuts de santé :"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "wp-nginx|wp-php|wp-mysql|wp-redis"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "wp-nginx|wp-php|wp-mariadb|wp-redis"
