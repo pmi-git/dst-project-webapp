@@ -23,9 +23,9 @@ services:
     ports:
       - "6379:6379"  # facultatif sauf pour debug local
     volumes:
-      - redis_data:/data
+      - wp_redis_data:/data
 
 volumes:
-  wordpress_data:
-  mysql_data:
-  redis_data:
+  wp_data:
+  wp_mysql_data:
+  wp_redis_data:
