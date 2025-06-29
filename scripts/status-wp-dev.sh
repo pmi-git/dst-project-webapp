@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "État de l’environnement DEV (containers + health)..."
+echo "État de l’environnement DEV WP (containers + health)..."
 echo ""
 
 docker-compose \

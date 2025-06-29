@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Arrêt et suppression complète de l'environnement DEV + volumes..."
+echo "Arrêt et suppression complète de l'environnement DEV WP + volumes..."
 
 docker-compose \
   -f compose/docker-compose.wp.base.yml \

@@ -1,23 +1,25 @@
 services:
   pts-nginx:
     ports:
+      - "8081:80"
       - "8444:443"
     volumes:
-      - ../ssl:/etc/nginx/certs
-      - ./logs/pts-nginx:/var/log/nginx
+      - ../docker/nginx/default-pts.conf:/etc/nginx/conf.d/default.conf
+      - ../ssl:/etc/nginx/ssl
+      - pts_data:/var/www/html
 
   pts-php:
     environment:
       PS_DEV_MODE: 1
       PS_INSTALL_AUTO: 1
+    env_file:
+      - ../.env
     volumes:
-      - ../prestashop:/var/www/html
-      - ./logs/pts-php:/var/log/php
+      - pts_data:/var/www/html
 
   pts-mariadb:
+    env_file:
+      - ../.env
     volumes:
-      - ./data/pts-mariadb:/var/lib/mysql
+      - pts_mariadb_data:/var/lib/mysql
 
-  pts-redis:
-    volumes:
-      - ./data/pts-redis:/data

@@ -17,8 +17,6 @@ services:
     image: mariadb:10.6
     env_file:
       - ../.env
-    volumes:
-      - pts_mysql_data:/var/lib/mysql
 
   pts-redis:
     image: redis:7
@@ -28,5 +26,6 @@ services:
       - pts_redis_data:/data
 
 volumes:
-  pts_mysql_data:
+  pts_data:
+  pts_mariadb_data:
   pts_redis_data:
