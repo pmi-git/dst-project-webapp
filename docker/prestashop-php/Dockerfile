@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y \
 # 2. Téléchargement de PrestaShop
 ARG PS_VERSION=8.1.4
 RUN curl -LO https://github.com/PrestaShop/PrestaShop/releases/download/${PS_VERSION}/prestashop_${PS_VERSION}.zip \
- && unzip prestashop_${PS_VERSION}.zip -d /tmp \
- && mv /tmp/prestashop/* /var/www/html/ \
- && rm -rf /tmp/prestashop* prestashop_${PS_VERSION}.zip
+ && unzip prestashop_${PS_VERSION}.zip -d /tmp/ps \
+ && mv /tmp/ps/* /var/www/html/ \
+ && rm -rf /tmp/ps prestashop_${PS_VERSION}.zip
 
 # 3. Permissions
 RUN chown -R www-data:www-data /var/www/html \
