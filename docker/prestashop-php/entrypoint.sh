@@ -3,8 +3,8 @@ set -e
 
 echo "PrestaShop - Entrypoint initialisé"
 
-DB_HOST="${DB_SERVER:-pts-mariadb}"
-DB_PORT="${DB_PORT:-3306}"
+DB_HOST="$PTS_DB_HOST"
+DB_PORT="3306"
 
 # Attente de la base de données
 echo "Attente de MariaDB sur ${DB_HOST}:${DB_PORT}..."
@@ -24,9 +24,9 @@ if [[ "$PS_INSTALL_AUTO" == "1" ]]; then
       --country=fr \
       --domain=localhost:8444 \
       --db_server="$DB_HOST" \
-      --db_name="${MYSQL_DATABASE:-prestashop}" \
-      --db_user="${MYSQL_USER:-prestashop}" \
-      --db_password="${MYSQL_PASSWORD:-prestashop}" \
+      --db_name="$PTS_DB_NAME" \
+      --db_user="$PTS_DB_USER" \
+      --db_password="$PTS_DB_PASSWORD" \
       --prefix=ps_ \
       --email="admin@prestashop.dev" \
       --password="admin" \

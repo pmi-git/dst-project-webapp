@@ -87,7 +87,12 @@ PRESTASHOP_DB_HOST=pts-mariadb
 # Redis (WordPress)
 WP_REDIS_HOST=wp-redis
 WP_CACHE=true
+
+# Redis (Prestashop)
+WP_REDIS_HOST=pts-redis
+WP_CACHE=true
 ```
+---
 
 ## 👥 Auteurs
 
