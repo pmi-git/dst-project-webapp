@@ -8,8 +8,7 @@ DB_PORT="${DB_PORT:-3306}"
 
 # Attente de la base de données
 echo "Attente de MariaDB sur ${DB_HOST}:${DB_PORT}..."
-until nc -z "$DB_HOST" "$DB_PORT"; do
-  echo -n "."
+while ! nc -z "$DB_HOST" "$DB_PORT"; do
   sleep 1
 done
 echo -e "\nBase de données prête !"

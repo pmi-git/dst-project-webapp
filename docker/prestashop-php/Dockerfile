@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # 1. Dépendances système pour PrestaShop
 RUN apt-get update && apt-get install -y \
     unzip wget curl git gnupg \
-    netcat \
+    netcat-openbsd \
     libzip-dev zip \
     libicu-dev libxml2-dev \
     libpng-dev libjpeg-dev libfreetype6-dev \
