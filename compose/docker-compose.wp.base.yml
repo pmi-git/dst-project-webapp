@@ -20,8 +20,6 @@ services:
 
   wp-redis:
     image: redis:7
-    ports:
-      - "6379:6379"  # facultatif sauf pour debug local
     volumes:
       - wp_redis_data:/data
 

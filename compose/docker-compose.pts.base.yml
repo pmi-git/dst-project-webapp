@@ -20,8 +20,6 @@ services:
 
   pts-redis:
     image: redis:7
-    ports:
-      - "6380:6379"  # Port séparé de WP pour debug éventuel
     volumes:
       - pts_redis_data:/data
 
