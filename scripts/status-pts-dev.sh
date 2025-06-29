@@ -10,4 +10,4 @@ docker-compose \
 
 echo ""
 echo "Vérification des statuts de santé :"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "pts-nginx|pts-php|pts-mysql|pts-redis"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "pts-nginx|pts-php|pts-mariadb|pts-redis"
