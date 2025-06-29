@@ -4,9 +4,6 @@ FROM nginx:stable-alpine
 # Mainteneur
 LABEL maintainer="Patrick Miviere <patrick.miviere@gmail.com>"
 
-# Copie de la configuration custom
-COPY ./default.conf /etc/nginx/conf.d/default.conf
-
 # Port exposé (80 par défaut)
 EXPOSE 80
 

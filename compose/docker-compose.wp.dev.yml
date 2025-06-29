@@ -4,7 +4,7 @@ services:
       - "8080:80"
       - "8443:443"
     volumes:
-      - ../docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ../docker/nginx/default-wp.conf:/etc/nginx/conf.d/default.conf
       - ../ssl:/etc/nginx/ssl
       - wp_data:/var/www/html
 
