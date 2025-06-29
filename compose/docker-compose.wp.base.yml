@@ -13,7 +13,7 @@ services:
     env_file:
       - ../.env
 
-  wp-mysql:
+  wp-mariadb:
     image: mariadb:10.6
     env_file:
       - ../.env
@@ -27,5 +27,5 @@ services:
 
 volumes:
   wp_data:
-  wp_mysql_data:
+  wp_mariadb_data:
   wp_redis_data:

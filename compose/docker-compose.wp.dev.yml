@@ -15,8 +15,8 @@ services:
       - ../docker/wordpress-php/wp-config.php:/var/www/html/wp-config.php
       - wp_data:/var/www/html
 
-  wp-mysql:
+  wp-mariadb:
     env_file:
       - ../.env
     volumes:
-      - wp_mysql_data:/var/lib/mysql
+      - wp_mariadb_data:/var/lib/mysql
