@@ -7,6 +7,13 @@ foreach ($required_env as $var) {
     }
 }
 
+// Fix pour WP-CLI / contextes sans HTTP_HOST
+if (php_sapi_name() === 'cli' || !isset($_SERVER['HTTP_HOST'])) {
+  $_SERVER['HTTP_HOST'] = getenv('WP_HOME_HOST') ?: 'localhost:8443';
+  $_SERVER['SERVER_NAME'] = $_SERVER['HTTP_HOST'];
+  $_SERVER['HTTPS'] = 'on';
+}
+
 // Configuration base de données
 define( 'DB_NAME', getenv('WORDPRESS_DB_NAME') );
 define( 'DB_USER', getenv('WORDPRESS_DB_USER') );

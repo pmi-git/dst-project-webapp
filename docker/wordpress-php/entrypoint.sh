@@ -1,23 +1,28 @@
 #!/bin/bash
 
-echo "Lancement de PHP-FPM en arrière-plan..."
-php-fpm -D
+set -e
 
-# Attente de MySQL
-until wp db check --allow-root >/dev/null 2>&1; do
-  echo "⏳ En attente de la base de données..."
+echo "⏳ Attente de MySQL ($WORDPRESS_DB_HOST)..."
+
+export MYSQL_PWD="$WORDPRESS_DB_PASSWORD"
+until mysql \
+  --ssl=0 \
+  -h"$WORDPRESS_DB_HOST" \
+  -u"$WORDPRESS_DB_USER" \
+  -e "SELECT 1" "$WORDPRESS_DB_NAME" >/dev/null 2>&1; do
   sleep 2
 done
 
-# Si WordPress est installé
+echo "✅ MySQL disponible"
+
+# Vérifier si WP est installé
 if wp core is-installed --allow-root; then
-  echo "WordPress est installé. Activation du plugin Redis..."
+  echo "✅ WordPress installé — activation Redis"
   wp plugin activate redis-cache --allow-root || true
   wp redis enable --allow-root || true
 else
-  echo "WordPress n'est pas encore installé. Redis ne sera pas activé."
+  echo "ℹ️ WordPress non installé — rien à activer"
 fi
 
-# Ramener PHP-FPM au premier plan
-echo "Ready. Attente de PHP-FPM..."
+echo "🚀 PHP-FPM prêt"
 exec php-fpm -F

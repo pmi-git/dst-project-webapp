@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     git \
     libpq-dev \
     libzip-dev \
+    default-mysql-client \
     && docker-php-ext-install pdo mysqli zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -25,6 +26,10 @@ RUN curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WP_VERSION}
     && echo "$WP_SHA1 *wordpress.tar.gz" | sha1sum -c - \
     && tar -xzf wordpress.tar.gz -C /var/www/html --strip-components=1 \
     && rm wordpress.tar.gz
+
+RUN curl -o /usr/local/bin/wp -fSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+  && chmod +x /usr/local/bin/wp \
+  && wp --info
 
 # Plugin Redis Object Cache
 RUN curl -o redis-cache.zip -fSL https://downloads.wordpress.org/plugin/redis-cache.latest-stable.zip \
