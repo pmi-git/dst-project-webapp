@@ -1,0 +1,11 @@
+resources:
+  - wordpress/nginx-configmap.yaml
+  - wordpress/nginx-deployment.yaml
+  - wordpress/php-deployment.yaml
+  - wordpress/services.yaml
+  - wordpress/ingress.yaml
+  - prestashop/nginx-configmap.yaml
+  - prestashop/nginx-deployment.yaml
+  - prestashop/php-deployment.yaml
+  - prestashop/services.yaml
+  - prestashop/ingress.yaml

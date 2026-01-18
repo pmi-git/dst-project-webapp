@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-web
+  namespace: client-wp
+spec:
+  selector: { app: wp-web }
+  ports: [{ port: 80, targetPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-php
+  namespace: client-wp
+spec:
+  selector: { app: wordpress-php }
+  ports: [{ port: 9000, targetPort: 9000 }]

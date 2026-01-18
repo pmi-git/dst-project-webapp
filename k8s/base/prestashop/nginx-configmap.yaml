@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pts-nginx-conf
+  namespace: client-pts
+data:
+  default.conf: |
+    server {
+      listen 80;
+      server_name _;
+      root /var/www/html;
+      index index.php index.html;
+      client_max_body_size 64M;
+
+      location / {
+        try_files $uri $uri/ /index.php?$args;
+      }
+
+      location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass prestashop-php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      }
+
+      location ~* \.(jpg|jpeg|gif|css|png|js|ico|webp|ttf|svg|woff|woff2|eot|otf)$ {
+        access_log off;
+        expires 30d;
+      }
+
+      location ~ /\.ht { deny all; }
+    }

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pts-web
+  namespace: client-pts
+spec:
+  selector: { app: pts-web }
+  ports: [{ port: 80, targetPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prestashop-php
+  namespace: client-pts
+spec:
+  selector: { app: prestashop-php }
+  ports: [{ port: 9000, targetPort: 9000 }]
