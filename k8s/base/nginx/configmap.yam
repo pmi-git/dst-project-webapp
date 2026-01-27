@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-conf
-data:
-  default-wp.conf: |
-    # (colle ici ton docker/nginx/default-wp.conf)
-  default-pts.conf: |
-    # (colle ici ton docker/nginx/default-pts.conf)
