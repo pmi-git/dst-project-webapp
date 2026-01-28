@@ -7,13 +7,13 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: ${APP_HOST}   # <--- fqdn ici
+  - host: ${URL}   # <--- fqdn ici
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: wordpress-service # adapter pour presta
+            name: ${APP_NAME}-service # adapter pour presta
             port:
               number: 80

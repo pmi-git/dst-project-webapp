@@ -3,82 +3,82 @@ import os
 import subprocess
 import sys
 
-# Chemins des fichiers
+# Configuration
 CLIENTS_FILE = "configs/clients.yaml"
 TEMPLATE_DIR = "k8s-templates"
+VPS_IP = "152.228.130.213" # <--- une variable d'env ?
 
 def load_yaml(filepath):
-    """Charge le fichier de configuration des clients"""
     if not os.path.exists(filepath):
-        print(f"Erreur: Le fichier {filepath} n'existe pas.")
+        print(f"Erreur: {filepath} introuvable.")
         sys.exit(1)
     with open(filepath, 'r') as file:
         return yaml.safe_load(file)
 
 def apply_k8s_manifest(manifest_content):
-    """Envoie le contenu YAML directement à kubectl via stdin"""
-    # L'équivalent de : echo "contenu" | kubectl apply -f -
     process = subprocess.run(
         ["kubectl", "apply", "-f", "-"],
         input=manifest_content.encode('utf-8'),
         capture_output=True
     )
-    
-    if process.returncode == 0:
-        print("   [OK] Ressource appliquée.")
-    else:
+    if process.returncode != 0:
         print(f"   [ERREUR] {process.stderr.decode('utf-8')}")
+    else:
+        print("   [OK] Appliqué.")
 
-def create_namespace_if_not_exists(namespace):
-    """Crée le namespace s'il n'existe pas"""
-    # cheats : --dry-run=client -o yaml | kubectl apply -f -
-    # rend la commande idempotente
+def create_namespace(namespace):
     cmd = f"kubectl create ns {namespace} --dry-run=client -o yaml | kubectl apply -f -"
     subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
-    print(f" -> Namespace '{namespace}' vérifié/créé.")
 
 def main():
-    print("🚀 Démarrage du déploiement automatisé...")
-    
+    print("Déploiement Multi-Apps V2...")
     config = load_yaml(CLIENTS_FILE)
     
     for client in config['clients']:
-        name = client['name']
-        env = client['environment']
-        app_type = client['app']
-        url = client['url']
+        client_name = client['name']
         
-        # 1. Définition du Namespace (ex: boulangerie-dev)
-        namespace = f"{name}-{env}"
-        
-        print(f"\nTraitement du client : {name} ({env})")
-        print(f"App: {app_type} | URL: {url}")
-        
-        # 2. Création du Namespace
-        create_namespace_if_not_exists(namespace)
-        
-        # 3. Liste des templates à déployer
-        # On commence par la DB, puis l'App, puis l'Ingress
-        templates_to_deploy = ["mariadb.yaml", "wordpress.yaml", "ingress.yaml"]
-        
-        for template_file in templates_to_deploy:
-            template_path = os.path.join(TEMPLATE_DIR, template_file)
+        for env in client['environments']:
+            namespace = f"{client_name}-{env}"
+            print(f"\n--- Client: {client_name} | Env: {env} ---")
+            create_namespace(namespace)
             
-            with open(template_path, 'r') as f:
-                content = f.read()
-            
-            # 4. TEMPLATISATION (Remplacement des variables)
-            # C'est ici que la magie opère
-            content = content.replace('${NAMESPACE}', namespace)
-            content = content.replace('${APP_HOST}', url)
-            
-            # Si on avait d'autres variables (DB User, etc), on les ferait ici
-            
-            # 5. Application
-            print(f"   Déploiement de {template_file}...")
-            apply_k8s_manifest(content)
+            for app in client['apps']:
+                # Construction de l'URL unique : app-client-env.ip.nip.io
+                # Ex: prestashop-fashion-store-dev.152.xx.xx.xx.nip.io
+                url = f"{app}-{client_name}-{env}.{VPS_IP}.nip.io"
+                
+                print(f" > Déploiement de {app} (URL: {url})")
+                
+                # 1. Déploiement de la DB dédiée à l'app
+                with open(f"{TEMPLATE_DIR}/mariadb.yaml", 'r') as f:
+                    db_tpl = f.read()
+                apply_k8s_manifest(
+                    db_tpl.replace('${NAMESPACE}', namespace)
+                          .replace('${APP_NAME}', app) # deviendra wordpress ou prestashop
+                )
+                
+                # 2. Déploiement de l'Application (WP ou Presta)
+                try:
+                    with open(f"{TEMPLATE_DIR}/{app}.yaml", 'r') as f:
+                        app_tpl = f.read()
+                    apply_k8s_manifest(
+                        app_tpl.replace('${NAMESPACE}', namespace)
+                               .replace('${APP_NAME}', app)
+                    )
+                except FileNotFoundError:
+                    print(f"   [ERREUR] Template {app}.yaml manquant !")
+                    continue
 
-    print("\n✅ Déploiement terminé pour tous les clients !")
+                # 3. Déploiement de l'Ingress
+                with open(f"{TEMPLATE_DIR}/ingress.yaml", 'r') as f:
+                    ing_tpl = f.read()
+                apply_k8s_manifest(
+                    ing_tpl.replace('${NAMESPACE}', namespace)
+                           .replace('${APP_NAME}', app)
+                           .replace('${URL}', url)
+                )
+
+    print("\nTerminé.")
 
 if __name__ == "__main__":
     main()

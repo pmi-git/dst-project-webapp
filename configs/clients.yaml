@@ -1,10 +1,17 @@
 clients:
   - name: boulangerie
-    environment: dev
-    app: wordpress
-    url: boulangerie-dev.152.228.130.213.nip.io
+    # Lui ne veut que WP
+    apps: 
+      - wordpress
+    environments:
+      - dev
+      - prod
     
-  - name: boulangerie
-    environment: prod
-    app: wordpress
-    url: boulangerie.152.228.130.213.nip.io
+  - name: fashion-store
+    # Lui veut les deux !
+    apps:
+      - wordpress
+      - prestashop
+    environments:
+      - dev 
+      # Pas de prod pour l'instant

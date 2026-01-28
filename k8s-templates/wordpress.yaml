@@ -31,7 +31,7 @@ spec:
         image: wordpress:latest
         env:
         - name: WORDPRESS_DB_HOST
-          value: "mariadb-service"
+          value: "${APP_NAME}-mariadb"
         - name: WORDPRESS_DB_USER
           value: "user"
         - name: WORDPRESS_DB_PASSWORD

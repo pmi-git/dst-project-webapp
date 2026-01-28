@@ -13,7 +13,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mariadb
+  name: ${APP_NAME}-db
   namespace: ${NAMESPACE}
   labels:
     app: mariadb
@@ -49,7 +49,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb-service
+  name: ${APP_NAME}-mariadb
   namespace: ${NAMESPACE}
 spec:
   selector:
