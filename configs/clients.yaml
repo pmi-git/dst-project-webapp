@@ -1,0 +1,10 @@
+clients:
+  - name: boulangerie
+    environment: dev
+    app: wordpress
+    url: boulangerie-dev.152.228.130.213.nip.io
+    
+  - name: boulangerie
+    environment: prod
+    app: wordpress
+    url: boulangerie.152.228.130.213.nip.io

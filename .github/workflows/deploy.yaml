@@ -1,0 +1,42 @@
+name: CI/CD - Deploy to K3s
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/k3s'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Récupérer le code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. Installer Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # 3. Installer les dépendances du script
+    - name: Install dependencies
+      run: |
+        pip install pyyaml
+
+    # 4. Configurer kubectl avec le secret
+    - name: Setup Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG_DATA }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        export KUBECONFIG=$HOME/.kube/config
+
+    # 5. Lancer TON script magique
+    - name: Run Deploy Script
+      env:
+        KUBECONFIG: /home/runner/.kube/config # On force le chemin pour être sûr
+      run: |
+        python3 scripts/deploy.py
