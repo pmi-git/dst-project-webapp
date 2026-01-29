@@ -1,6 +1,5 @@
 clients:
   - name: boulangerie
-    # Lui ne veut que WP
     apps: 
       - wordpress
     environments:
@@ -8,10 +7,14 @@ clients:
       - prod
     
   - name: fashion-store
-    # Lui veut les deux !
     apps:
       - wordpress
       - prestashop
     environments:
       - dev 
-      # Pas de prod pour l'instant
+
+  - name: garage-moto
+    apps:
+      - prestashop
+    environments:
+      - dev

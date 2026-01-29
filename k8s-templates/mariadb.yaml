@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mariadb-pvc
-  namespace: ${NAMESPACE}  # <--- VARIABLE
+  name: ${APP_NAME}-db-pvc
+  namespace: ${NAMESPACE}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -13,27 +13,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${APP_NAME}-db
+  name: ${APP_NAME}-mariadb
   namespace: ${NAMESPACE}
   labels:
-    app: mariadb
+    app: ${APP_NAME}-mariadb
 spec:
   selector:
     matchLabels:
-      app: mariadb
+      app: ${APP_NAME}-mariadb
   template:
     metadata:
       labels:
-        app: mariadb
+        app: ${APP_NAME}-mariadb
     spec:
       containers:
       - name: mariadb
         image: mariadb:10.6
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: "root"
+          value: "rootpassword"
         - name: MYSQL_DATABASE
-          value: "db_app"
+          value: "db_data"
         - name: MYSQL_USER
           value: "user"
         - name: MYSQL_PASSWORD
@@ -44,16 +44,16 @@ spec:
       volumes:
       - name: mariadb-storage
         persistentVolumeClaim:
-          claimName: mariadb-pvc
+          claimName: ${APP_NAME}-db-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${APP_NAME}-mariadb
+  name: ${APP_NAME}-mariadb # <--- Le nom unique (ex: wordpress-mariadb)
   namespace: ${NAMESPACE}
 spec:
   selector:
-    app: mariadb
+    app: ${APP_NAME}-mariadb
   ports:
     - port: 3306
       targetPort: 3306
