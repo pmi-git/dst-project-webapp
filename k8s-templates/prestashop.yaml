@@ -39,7 +39,9 @@ spec:
         - name: DB_NAME
           value: "db_data"
         - name: PS_INSTALL_AUTO
-          value: "1" 
+          value: "1"
+        - name: PS_DOMAIN #forçage explicite du domaine pour pas etre redirigé sur l'ip du pod
+          value: "${URL}"
         ports:
         - containerPort: 80
         volumeMounts:

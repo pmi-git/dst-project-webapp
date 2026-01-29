@@ -75,6 +75,7 @@ def main():
                     apply_k8s_manifest(
                         app_tpl.replace('${NAMESPACE}', namespace)
                                .replace('${APP_NAME}', app)
+                               .replace('${URL}', url)
                     )
                 else:
                     print(f"   [!] Attention: Template {app}.yaml introuvable.")
