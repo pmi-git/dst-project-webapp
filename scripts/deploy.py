@@ -78,6 +78,7 @@ def main():
             
             for app in client['apps']:
                 url = f"{app}-{client_name}-{env}.{VPS_IP}.nip.io"
+                print(f" > Traitement de {app} (URL: {url})")
                 print(f" > Traitement de {app}")
 
                 # --- GESTION DES SECRETS (LA V2 EST ICI) ---
