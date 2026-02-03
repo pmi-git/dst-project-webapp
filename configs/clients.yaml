@@ -18,3 +18,10 @@ clients:
       - prestashop
     environments:
       - dev
+
+  - name: durant
+    apps:
+      - prestashop
+    environments:
+      - dev
+      - prod
