@@ -30,14 +30,21 @@ spec:
       - name: mariadb
         image: mariadb:10.6
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: "rootpassword"
         - name: MYSQL_DATABASE
           value: "db_data"
         - name: MYSQL_USER
           value: "user"
+        # --- SECRETS ---
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-db-secret
+              key: root-password
         - name: MYSQL_PASSWORD
-          value: "password"
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-db-secret
+              key: db-password
         volumeMounts:
         - name: mariadb-storage
           mountPath: /var/lib/mysql
@@ -49,7 +56,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${APP_NAME}-mariadb # <--- Le nom unique (ex: wordpress-mariadb)
+  name: ${APP_NAME}-mariadb
   namespace: ${NAMESPACE}
 spec:
   selector:

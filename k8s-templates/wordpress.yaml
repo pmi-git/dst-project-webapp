@@ -9,6 +9,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+# ... (Partie PVC identique) ...
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,10 +35,14 @@ spec:
           value: "${APP_NAME}-mariadb"
         - name: WORDPRESS_DB_USER
           value: "user"
-        - name: WORDPRESS_DB_PASSWORD
-          value: "password"
         - name: WORDPRESS_DB_NAME
           value: "db_data"
+        # --- SECRET ---
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-db-secret
+              key: db-password
         ports:
         - containerPort: 80
         volumeMounts:
@@ -48,6 +53,7 @@ spec:
         persistentVolumeClaim:
           claimName: wordpress-pvc
 ---
+# ... (Service identique) ...
 apiVersion: v1
 kind: Service
 metadata:

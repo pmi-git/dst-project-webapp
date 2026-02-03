@@ -9,6 +9,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+# ... (Partie PVC identique) ...
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,14 +35,32 @@ spec:
           value: "${APP_NAME}-mariadb"
         - name: DB_USER
           value: "user"
-        - name: DB_PASSWD
-          value: "password"
         - name: DB_NAME
           value: "db_data"
         - name: PS_INSTALL_AUTO
           value: "1"
-        - name: PS_DOMAIN #forçage explicite du domaine pour pas etre redirigé sur l'ip du pod
+        - name: PS_DOMAIN # forcage du domaine pour eviter la redirection vers ip du pod
           value: "${URL}"
+        - name: PS_ENABLE_SSL
+          value: "0"
+        - name: PS_COUNTRY
+          value: "FR"
+        - name: PS_LANGUAGE
+          value: "fr"
+        - name: ADMIN_MAIL
+          value: "admin@${APP_NAME}-${NAMESPACE}.com"
+        # --- SECRETS DB ---
+        - name: DB_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-db-secret
+              key: db-password
+        # --- SECRET ADMIN ---
+        - name: ADMIN_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-admin-secret
+              key: admin-password
         ports:
         - containerPort: 80
         volumeMounts:
@@ -52,6 +71,7 @@ spec:
         persistentVolumeClaim:
           claimName: prestashop-pvc
 ---
+# ... (Service identique) ...
 apiVersion: v1
 kind: Service
 metadata:
