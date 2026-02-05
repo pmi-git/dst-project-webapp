@@ -16,8 +16,9 @@ spec:
     spec:
       # --- AJOUT DU BLOC MAGIQUE ---
       securityContext:
-        runAsUser: 0    # 0 = Root (Le patron)
-        fsGroup: 0      # On s'assure que le groupe est root aussi
+        runAsUser: 33    # On tourne comme WordPress
+        runAsGroup: 33   # On appartient au groupe WordPress
+        fsGroup: 33      # On force le volume à accepter le groupe 33
       # -----------------------------
       containers:
       - name: filebrowser
