@@ -14,6 +14,11 @@ spec:
       labels:
         app: ${APP_NAME}-filebrowser
     spec:
+      # --- AJOUT DU BLOC MAGIQUE ---
+      securityContext:
+        runAsUser: 0    # 0 = Root (Le patron)
+        fsGroup: 0      # On s'assure que le groupe est root aussi
+      # -----------------------------
       containers:
       - name: filebrowser
         image: filebrowser/filebrowser:latest
