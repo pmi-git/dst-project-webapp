@@ -17,21 +17,23 @@ spec:
       containers:
       - name: filebrowser
         image: filebrowser/filebrowser:latest
-        args: ["/database.db"] # Base de données interne de config (users, etc)
+        # CORRECTION ICI : On ajoute "-d" devant le chemin
+        args: ["-d", "/tmp/database.db"] 
         env:
+        # On met à jour la variable pour qu'elle matche
         - name: FB_DATABASE
-          value: "/database.db"
+          value: "/tmp/database.db"
         - name: FB_ROOT
-          value: "/srv" # Le dossier qu'on verra dans l'interface
+          value: "/srv"
         - name: FB_PORT
           value: "80"
         - name: FB_NOAUTH
-          value: "1" # DANGER : Pas d'auth pour commencer (on sécurisera après)
+          value: "1"
         ports:
         - containerPort: 80
         volumeMounts:
         - name: app-storage
-          mountPath: /srv # On monte les fichiers du site ICI
+          mountPath: /srv
       volumes:
       - name: app-storage
         persistentVolumeClaim:
