@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'feature/k3s'
+      - 'feature/filebrowser'
 
 jobs:
   deploy:

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}-filebrowser
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${APP_NAME}-filebrowser
+spec:
+  selector:
+    matchLabels:
+      app: ${APP_NAME}-filebrowser
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}-filebrowser
+    spec:
+      containers:
+      - name: filebrowser
+        image: filebrowser/filebrowser:latest
+        args: ["/database.db"] # Base de données interne de config (users, etc)
+        env:
+        - name: FB_DATABASE
+          value: "/database.db"
+        - name: FB_ROOT
+          value: "/srv" # Le dossier qu'on verra dans l'interface
+        - name: FB_PORT
+          value: "80"
+        - name: FB_NOAUTH
+          value: "1" # DANGER : Pas d'auth pour commencer (on sécurisera après)
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app-storage
+          mountPath: /srv # On monte les fichiers du site ICI
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          # C'EST ICI LA CLEF : On se branche sur le PVC de l'app (ex: wordpress-pvc)
+          claimName: ${APP_NAME}-pvc 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}-filebrowser-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: ${APP_NAME}-filebrowser
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${APP_NAME}-filebrowser-ingress
+  namespace: ${NAMESPACE}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: ${FILEBROWSER_URL} # ex: files-wordpress-boulangerie-dev...
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ${APP_NAME}-filebrowser-service
+            port:
+              number: 80

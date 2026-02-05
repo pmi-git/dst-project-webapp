@@ -132,6 +132,24 @@ def main():
                            .replace('${URL}', url)
                 )
 
+                # D. Le Gestionnaire de Fichiers (FileBrowser)
+                # On génère une URL spécifique : files-app-client-env...
+                fb_url = f"files-{app}-{client_name}-{env}.{VPS_IP}.nip.io"
+                print(f" > Ajout FileBrowser (URL: {fb_url})")
+
+                fb_file = f"{TEMPLATE_DIR}/filebrowser.yaml"
+                if os.path.exists(fb_file):
+                    with open(fb_file, 'r') as f:
+                        fb_tpl = f.read()
+                    
+                    apply_k8s_manifest(
+                        fb_tpl.replace('${NAMESPACE}', namespace)
+                              .replace('${APP_NAME}', app)
+                              .replace('${FILEBROWSER_URL}', fb_url)
+                    )
+                else:
+                    print(f"   [!] Template filebrowser.yaml introuvable.")
+                    
     print("\n✅ Déploiement sécurisé terminé.")
 
 if __name__ == "__main__":
