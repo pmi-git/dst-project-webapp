@@ -16,8 +16,8 @@ spec:
     spec:
       # --- AJOUT DU BLOC MAGIQUE ---
       securityContext:
-        runAsUser: 33    # On tourne comme WordPress
-        runAsGroup: 33   # On appartient au groupe WordPress
+        runAsUser: 33    # On tourne comme www-data
+        runAsGroup: 33   # On appartient au groupe www-data
         fsGroup: 33      # On force le volume à accepter le groupe 33
       # -----------------------------
       containers:
