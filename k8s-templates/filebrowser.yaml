@@ -40,11 +40,19 @@ spec:
         volumeMounts:
         - name: app-storage
           mountPath: /srv
+        # --- AJOUT 1 : On monte le volume temporaire dans /config ---
+        - name: temp-config
+          mountPath: /config
+        # ------------------------------------------------------------
       volumes:
       - name: app-storage
         persistentVolumeClaim:
           # C'EST ICI LA CLEF : On se branche sur le PVC de l'app (ex: wordpress-pvc)
           claimName: ${APP_NAME}-pvc 
+      # --- AJOUT 2 : Définition du volume temporaire ---
+      - name: temp-config
+        emptyDir: {} 
+      # -------------------------------------------------
 ---
 apiVersion: v1
 kind: Service
