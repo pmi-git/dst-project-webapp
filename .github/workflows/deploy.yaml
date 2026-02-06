@@ -47,4 +47,5 @@ jobs:
       env:
         VPS_IP: ${{ secrets.VPS_IP }} # secret, sinon en dur dans le script
       run: |
+        pip install requests pyyaml
         python3 scripts/smoke_test.py
