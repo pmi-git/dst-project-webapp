@@ -6,7 +6,10 @@ import sys
 
 # CONFIGURATION
 CLIENTS_FILE = "configs/clients.yaml"
-VPS_IP = os.getenv("VPS_IP", "152.228.130.213") # Ton IP
+VPS_IP = os.getenv("VPS_IP")
+# Si elle est vide ou None, on force ton IP
+if not VPS_IP:
+    VPS_IP = "152.228.130.213"
 MAX_RETRIES = 10  # On essaie 10 fois
 DELAY = 10        # On attend 10s entre chaque essai (Total ~1min30 de patience)
 
