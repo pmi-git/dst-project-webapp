@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - 'feature/k3s'
-      - 'feature/smoke'
+      - 'feature/security'
 
 jobs:
   deploy:
