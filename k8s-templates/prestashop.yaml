@@ -30,6 +30,13 @@ spec:
       containers:
       - name: prestashop
         image: prestashop/prestashop:1.7
+        resources:
+          requests:
+            cpu: "100m"    # 0.1 CPU
+            memory: "128Mi"
+          limits:
+            cpu: "500m"    # 0.5 CPU (Le plafond)
+            memory: "512Mi"
         env:
         - name: DB_SERVER
           value: "${APP_NAME}-mariadb"
@@ -83,3 +90,17 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${APP_NAME}-hpa
+  namespace: ${NAMESPACE}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${APP_NAME} # Doit matcher le nom du Deployment plus haut
+  minReplicas: 1
+  maxReplicas: 5    # Jusqu'à 5 copies en cas de tempête !
+  targetCPUUtilizationPercentage: 50
