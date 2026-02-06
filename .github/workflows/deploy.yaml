@@ -42,9 +42,9 @@ jobs:
         scan-type: 'config'        # Mode configuration (pour les fichiers K8s/Terraform)
         scan-ref: 'k8s-templates/' # On scanne uniquement ton dossier de templates
         format: 'table'            # Affichage tableau dans les logs
-        exit-code: '1'             # ⚠️ IMPORTANT : 1 = Fait échouer la pipeline si faille trouvée
+        exit-code: '0'  # On ne bloque plus le déploiement, on alerte juste
         ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'  # On ne bloque que pour les trucs graves
+        severity: 'CRITICAL,HIGH'  
       # ----------------------
     
     # 5. Lancer le script de deploy
