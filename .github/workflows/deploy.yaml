@@ -48,16 +48,22 @@ jobs:
       # ----------------------
     
     # 5. Lancer le script de deploy
-    - name: Run Deploy Script
+    - name: Run deployment script
       env:
-        KUBECONFIG: /home/runner/.kube/config # On force le chemin pour être sûr
+        # On passe TOUS les secrets au script, il choisira le bon selon la branche
+        KUBECONFIG_DEV: ${{ secrets.KUBECONFIG_DEV }}
+        VPS_IP_DEV: ${{ secrets.VPS_IP_DEV }}
+        KUBECONFIG_PROD: ${{ secrets.KUBECONFIG_PROD }}
+        VPS_IP_PROD: ${{ secrets.VPS_IP_PROD }}
       run: |
-        python3 scripts/deploy.py
+          python3 scripts/deploy.py
 
     # 6. Lancer les smoke test
     - name: Run Smoke Tests
       env:
-        VPS_IP: ${{ secrets.VPS_IP }} # secret, sinon en dur dans le script
+        # On passe aussi les deux IPs au test
+        VPS_IP_DEV: ${{ secrets.VPS_IP_DEV }}
+        VPS_IP_PROD: ${{ secrets.VPS_IP_PROD }}
       run: |
         pip install requests pyyaml
         python3 scripts/smoke_test.py
