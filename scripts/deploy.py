@@ -70,6 +70,7 @@ def create_namespace_if_not_exists(namespace):
 
 def deploy_system_apps(context):
     print(f"\n--- Déploiement Infrastructure (Monitoring) ---")
+    apply_k8s_template("middleware.yaml", context)
     print(f" > Configuration Ingress Grafana (URL: monit.{context['DOMAIN_SUFFIX']})")
     # On force l'application du template
     apply_k8s_template("monitoring.yaml", context)
