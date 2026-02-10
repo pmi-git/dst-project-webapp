@@ -3,7 +3,14 @@ kind: Ingress
 metadata:
   name: grafana-ingress
   namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
 spec:
+  tls:
+  - hosts:
+    - monit.${DOMAIN_SUFFIX}
+    secretName: ${APP_NAME}-tls-secret
   rules:
   - host: monit.${DOMAIN_SUFFIX}
     http:

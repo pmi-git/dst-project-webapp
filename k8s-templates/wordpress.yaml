@@ -77,7 +77,14 @@ kind: Ingress
 metadata:
   name: ${APP_NAME}-ingress
   namespace: ${NAMESPACE}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
 spec:
+  tls:
+  - hosts:
+    - ${URL_SLUG}.${DOMAIN_SUFFIX}
+    secretName: ${APP_NAME}-tls-secret
   rules:
   - host: ${URL_SLUG}.${DOMAIN_SUFFIX}
     http:
