@@ -1,0 +1,3 @@
+infra/ansible/kubeconfig_prod.yaml
+.venv
+venv/

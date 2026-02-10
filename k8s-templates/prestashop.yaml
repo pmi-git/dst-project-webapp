@@ -84,6 +84,8 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     kubernetes.io/tls-acme: "true"
+    # Utilise le middleware nommé 'redirect-https' qui est dans le namespace
+    traefik.ingress.kubernetes.io/router.middlewares: ${NAMESPACE}-redirect-https@kubernetescrd
 spec:
   tls:
   - hosts:

@@ -104,12 +104,16 @@ def main():
             "ENV": TARGET_ENV,
             "NAMESPACE": namespace,
             "VPS_IP": VPS_IP,
-            "DOMAIN_SUFFIX": DOMAIN_SUFFIX # La nouvelle variable magique
+            "DOMAIN_SUFFIX": DOMAIN_SUFFIX
         }
 
         # Création du secret DB
         db_secret_cmd = f"kubectl create secret generic {client_name}-db-secret --from-literal=password=rootroot --dry-run=client -o yaml | kubectl apply -n {namespace} -f -"
         subprocess.run(db_secret_cmd, shell=True, stdout=subprocess.DEVNULL)
+
+        # Force le redirect https
+        print(f" > Configuration Middleware HTTPS pour {namespace}")
+        apply_k8s_template("middleware.yaml", context)
 
         for app in client['apps']:
             context["APP_NAME"] = app
