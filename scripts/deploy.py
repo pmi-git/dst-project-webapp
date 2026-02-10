@@ -68,8 +68,23 @@ def apply_k8s_template(template_name, context):
 def create_namespace_if_not_exists(namespace):
     subprocess.run(f"kubectl create namespace {namespace} --dry-run=client -o yaml | kubectl apply -f -", shell=True, check=True, stdout=subprocess.DEVNULL)
 
+def deploy_system_apps(context):
+    print(f"\n--- Déploiement Infrastructure (Monitoring) ---")
+    print(f" > Configuration Ingress Grafana (URL: monit.{context['DOMAIN_SUFFIX']})")
+    # On force l'application du template
+    apply_k8s_template("monitoring.yaml", context)
+
 def main():
     config = load_yaml(CLIENTS_FILE)
+    
+    system_context = {
+        "DOMAIN_SUFFIX": DOMAIN_SUFFIX,
+        "VPS_IP": VPS_IP,
+        # On ajoute ces variables même si monitoring.yaml n'en a pas besoin, pour éviter les erreurs
+        "APP_NAME": "grafana",
+        "NAMESPACE": "monitoring" 
+    }
+    deploy_system_apps(system_context)
     
     for client in config['clients']:
         client_name = client['name']
