@@ -68,7 +68,7 @@ metadata:
 spec:
   rules:
   # MODIFICATION : Sous-domaine "files-" + Domaine OVH
-  - host: files-${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}
+  - host: files-${URL_SLUG}.${DOMAIN_SUFFIX}
     http:
       paths:
       - path: /

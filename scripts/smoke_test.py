@@ -6,12 +6,26 @@ import sys
 
 # CONFIGURATION
 CLIENTS_FILE = "configs/clients.yaml"
-VPS_IP = os.getenv("VPS_IP")
-# Si elle est vide ou None, on force ton IP
+MAX_RETRIES = 10
+DELAY = 10
+
+# --- DETECTION DE L'ENVIRONNEMENT (Comme dans deploy.py) ---
+CURRENT_BRANCH = os.getenv("GITHUB_REF_NAME", "unknown")
+
+if CURRENT_BRANCH == "main":
+    print("💎 MODE PRODUCTION (Smoke Test)")
+    TARGET_ENV = "prod"
+    VPS_IP = os.getenv("VPS_IP_PROD")
+    DOMAIN_SUFFIX = "pmi.ovh"
+else:
+    print("🛠 MODE DEVELOPPEMENT (Smoke Test)")
+    TARGET_ENV = "dev"
+    VPS_IP = os.getenv("VPS_IP_DEV")
+    DOMAIN_SUFFIX = "dev.pmi.ovh"
+
 if not VPS_IP:
-    VPS_IP = "152.228.130.213"
-MAX_RETRIES = 10  # On essaie 10 fois
-DELAY = 10        # On attend 10s entre chaque essai (Total ~1min30 de patience)
+    print(f"❌ Erreur: L'IP du VPS ({TARGET_ENV.upper()}) est introuvable.")
+    sys.exit(1)
 
 def load_yaml(filepath):
     with open(filepath, 'r') as file:
@@ -21,29 +35,28 @@ def check_url(url):
     print(f"   🔎 Test de {url}...", end="", flush=True)
     for i in range(MAX_RETRIES):
         try:
-            # On met un timeout de 5s pour ne pas bloquer indéfiniment
-            response = requests.get(f"http://{url}", timeout=5)
+            # On suit les redirections (allow_redirects=True)
+            response = requests.get(f"http://{url}", timeout=5, allow_redirects=True)
             
-            # Si le code est inférieur à 500 (200 OK, 301 Redirect, 401 Auth...), c'est que le serveur répond.
-            # Si c'est 502/503/504, c'est que le pod ou l'ingress est KO.
-            if response.status_code < 500:
+            # CRITERE DE REUSSITE : Code 200 uniquement
+            if response.status_code == 200:
                 print(f" ✅ (Status: {response.status_code})")
                 return True
             else:
-                print(f".", end="", flush=True) # Petit point pour dire "j'attends"
+                # Si c'est 404, 503, 500, etc... on attend
+                print(f" ⏳ ({response.status_code})", end="", flush=True)
         except requests.exceptions.ConnectionError:
             print(f".", end="", flush=True)
         except Exception as e:
-            print(f"!")
+            print(f"!", end="", flush=True)
         
-        # On attend avant de réessayer
         time.sleep(DELAY)
     
     print(f" ❌ ECHEC après {MAX_RETRIES} tentatives.")
     return False
 
 def main():
-    print("🚑 Démarrage des Smoke Tests...")
+    print(f"🚑 Démarrage des Smoke Tests sur {TARGET_ENV.upper()}...")
     
     if not os.path.exists(CLIENTS_FILE):
         print(f"Erreur: {CLIENTS_FILE} introuvable.")
@@ -51,28 +64,39 @@ def main():
 
     config = load_yaml(CLIENTS_FILE)
     errors = 0
+    tests_run = 0
     
     for client in config['clients']:
         client_name = client['name']
-        for env in client['environments']:
-            print(f"\n--- Client: {client_name} [{env}] ---")
+        
+        # FILTRE : On ne teste que l'environnement en cours
+        if TARGET_ENV not in client['environments']:
+            continue
+
+        print(f"\n--- Client: {client_name} [{TARGET_ENV}] ---")
+        namespace = f"{client_name}-{TARGET_ENV}"
             
-            for app in client['apps']:
-                # 1. Test de l'URL principale
-                url = f"{app}-{client_name}-{env}.{VPS_IP}.nip.io"
-                if not check_url(url):
-                    errors += 1
+        for app in client['apps']:
+            # 1. Test de l'URL principale
+            url = f"{app}-{client_name}.{DOMAIN_SUFFIX}"
+            if not check_url(url):
+                errors += 1
+            tests_run += 1
 
-                # 2. Test de l'URL FileBrowser (Bonus)
-                fb_url = f"files-{app}-{client_name}-{env}.{VPS_IP}.nip.io"
-                if not check_url(fb_url):
-                    errors += 1
+            # 2. Test de l'URL FileBrowser
+            fb_url = f"files-{app}-{client_name}.{DOMAIN_SUFFIX}"
+            if not check_url(fb_url):
+                errors += 1
+            tests_run += 1
 
-    if errors > 0:
-        print(f"\n🔥 {errors} tests ont échoué ! La pipeline est marquée comme FAILED.")
-        sys.exit(1) # Ça fait échouer la pipeline GitHub
+    print("-" * 30)
+    if tests_run == 0:
+        print("⚠️ Aucun test n'a été exécuté (vérifiez clients.yaml ou la branche).")
+    elif errors > 0:
+        print(f"🔥 {errors} tests ont échoué ! La pipeline est marquée comme FAILED.")
+        sys.exit(1)
     else:
-        print("\n✨ Tous les systèmes sont opérationnels !")
+        print("\n✨ Tous les systèmes répondent 200 OK !")
         sys.exit(0)
 
 if __name__ == "__main__":

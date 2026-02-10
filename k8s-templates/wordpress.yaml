@@ -79,8 +79,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   rules:
-  # MODIFICATION : Utilisation du domaine OVH
-  - host: ${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}
+  - host: ${URL_SLUG}.${DOMAIN_SUFFIX}
     http:
       paths:
       - path: /

@@ -92,14 +92,16 @@ def main():
             "DOMAIN_SUFFIX": DOMAIN_SUFFIX # La nouvelle variable magique
         }
 
-        # Création du secret DB (générique pour l'école)
+        # Création du secret DB
         db_secret_cmd = f"kubectl create secret generic {client_name}-db-secret --from-literal=password=rootroot --dry-run=client -o yaml | kubectl apply -n {namespace} -f -"
         subprocess.run(db_secret_cmd, shell=True, stdout=subprocess.DEVNULL)
 
         for app in client['apps']:
             context["APP_NAME"] = app
-            # Exemple d'URL affichée : wordpress-boulangerie-dev.dev.pmi.ovh
-            full_url = f"{app}-{namespace}.{DOMAIN_SUFFIX}"
+            
+            url_slug = f"{app}-{client_name}"
+            context["URL_SLUG"] = url_slug
+            full_url = f"{url_slug}.{DOMAIN_SUFFIX}"
             print(f" > Traitement de {app} (URL: {full_url})")
             
             apply_k8s_template(f"{app}.yaml", context)

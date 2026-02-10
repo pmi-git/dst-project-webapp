@@ -53,7 +53,7 @@ spec:
         - name: PS_INSTALL_AUTO
           value: "1"
         - name: PS_DOMAIN
-          value: "${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}" # IMPORTANT pour Presta
+          value: "${URL_SLUG}.${DOMAIN_SUFFIX}" # IMPORTANT pour Presta
         ports:
         - containerPort: 80
         volumeMounts:
@@ -83,7 +83,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   rules:
-  - host: ${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}
+  - host: ${URL_SLUG}.${DOMAIN_SUFFIX}
     http:
       paths:
       - path: /
