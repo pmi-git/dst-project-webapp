@@ -54,6 +54,10 @@ spec:
           value: "1"
         - name: PS_DOMAIN
           value: "${URL_SLUG}.${DOMAIN_SUFFIX}" # IMPORTANT pour Presta
+        - name: PS_ENABLE_SSL
+          value: "1"
+        - name: PS_ENABLE_SSL_EVERYWHERE
+          value: "1"
         ports:
         - containerPort: 80
         volumeMounts:
