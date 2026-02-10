@@ -74,7 +74,7 @@ spec:
   tls:
   - hosts:
     - files-${URL_SLUG}.${DOMAIN_SUFFIX}
-    secretName: ${APP_NAME}-tls-secret
+    secretName: ${APP_NAME}-filebrowser-tls-secret
   rules:
   # MODIFICATION : Sous-domaine "files-" + Domaine OVH
   - host: files-${URL_SLUG}.${DOMAIN_SUFFIX}
