@@ -1,77 +1,95 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: wordpress-pvc
+  name: ${APP_NAME}-service
   namespace: ${NAMESPACE}
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-# ... (Partie PVC identique) ...
+  selector:
+    app: ${APP_NAME}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress
+  name: ${APP_NAME}
   namespace: ${NAMESPACE}
   labels:
-    app: wordpress
+    app: ${APP_NAME}
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: wordpress
+      app: ${APP_NAME}
   template:
     metadata:
       labels:
-        app: wordpress
+        app: ${APP_NAME}
     spec:
       containers:
       - name: wordpress
         image: wordpress:latest
         resources:
           requests:
-            cpu: "100m"    # 0.1 CPU
+            cpu: "100m"
             memory: "128Mi"
           limits:
-            cpu: "500m"    # 0.5 CPU (Le plafond)
+            cpu: "500m"
             memory: "512Mi"
         env:
         - name: WORDPRESS_DB_HOST
           value: "${APP_NAME}-mariadb"
         - name: WORDPRESS_DB_USER
           value: "user"
-        - name: WORDPRESS_DB_NAME
-          value: "db_data"
-        # --- SECRET ---
         - name: WORDPRESS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: ${APP_NAME}-db-secret
-              key: db-password
+              name: ${CLIENT_NAME}-db-secret
+              key: password
+        - name: WORDPRESS_DB_NAME
+          value: "db_data"
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: wordpress-storage
+        - name: app-storage
           mountPath: /var/www/html
       volumes:
-      - name: wordpress-storage
+      - name: app-storage
         persistentVolumeClaim:
-          claimName: wordpress-pvc
+          claimName: ${APP_NAME}-pvc
 ---
-# ... (Service identique) ...
 apiVersion: v1
-kind: Service
+kind: PersistentVolumeClaim
 metadata:
-  name: wordpress-service
+  name: ${APP_NAME}-pvc
   namespace: ${NAMESPACE}
 spec:
-  selector:
-    app: wordpress
-  ports:
-    - port: 80
-      targetPort: 80
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${APP_NAME}-ingress
+  namespace: ${NAMESPACE}
+spec:
+  rules:
+  # MODIFICATION : Utilisation du domaine OVH
+  - host: ${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ${APP_NAME}-service
+            port:
+              number: 80
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
@@ -82,7 +100,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: ${APP_NAME} # Doit matcher le nom du Deployment plus haut
+    name: ${APP_NAME}
   minReplicas: 1
-  maxReplicas: 5    # Jusqu'à 5 copies en cas de tempête !
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 50

@@ -2,155 +2,113 @@ import yaml
 import os
 import subprocess
 import sys
-import secrets
-import string
 
 # --- CONFIGURATION ---
 CLIENTS_FILE = "configs/clients.yaml"
 TEMPLATE_DIR = "k8s-templates"
-VPS_IP = os.getenv("VPS_IP", "152.228.130.213") 
+
+# Récupération de la branche (fournie par GitHub Actions)
+CURRENT_BRANCH = os.getenv("GITHUB_REF_NAME", "unknown")
+
+print(f"🚀 Démarrage du déploiement depuis la branche : {CURRENT_BRANCH}")
+
+# --- LOGIQUE DE SELECTION DU CLUSTER ET DU DOMAINE ---
+if CURRENT_BRANCH == "main":
+    print("💎 MODE PRODUCTION DETECTÉ (Cible: Gravelines)")
+    TARGET_ENV = "prod"
+    KUBE_SECRET = os.getenv("KUBECONFIG_PROD")
+    VPS_IP = os.getenv("VPS_IP_PROD")
+    DOMAIN_SUFFIX = "pmi.ovh"       # Domaine Propre
+else:
+    print("🛠 MODE DEVELOPPEMENT DETECTÉ (Cible: Strasbourg)")
+    TARGET_ENV = "dev"
+    KUBE_SECRET = os.getenv("KUBECONFIG_DEV")
+    VPS_IP = os.getenv("VPS_IP_DEV")
+    DOMAIN_SUFFIX = "dev.pmi.ovh"   # Sous-domaine de dev
+
+# Sécurité : Vérification des secrets
+if not KUBE_SECRET:
+    print(f"❌ Erreur: Le secret KUBECONFIG_{TARGET_ENV.upper()} est vide ou introuvable.")
+    sys.exit(1)
+if not VPS_IP:
+    print(f"❌ Erreur: L'IP du VPS ({TARGET_ENV.upper()}) est introuvable.")
+    sys.exit(1)
+
+# Configuration de kubectl
+KUBECONFIG_PATH = f"{os.environ['HOME']}/.kube/config"
+os.makedirs(os.path.dirname(KUBECONFIG_PATH), exist_ok=True)
+with open(KUBECONFIG_PATH, "w") as f:
+    f.write(KUBE_SECRET)
+os.environ["KUBECONFIG"] = KUBECONFIG_PATH
+
+print(f"✅ Cluster {TARGET_ENV.upper()} configuré (IP: {VPS_IP} | Domaine: *.{DOMAIN_SUFFIX})")
 
 def load_yaml(filepath):
-    if not os.path.exists(filepath):
-        print(f"Erreur: {filepath} introuvable.")
-        sys.exit(1)
     with open(filepath, 'r') as file:
         return yaml.safe_load(file)
 
-def generate_password(length=16):
-    """Génère un mot de passe fort aléatoire"""
-    alphabet = string.ascii_letters + string.digits # On évite les caractères spéciaux qui cassent parfois les URLs
-    return ''.join(secrets.choice(alphabet) for i in range(length))
-
-def create_secret_if_not_exists(namespace, secret_name, data_dict):
-    """
-    Crée un secret Kubernetes seulement s'il n'existe pas déjà.
-    Garantit la persistance du mot de passe en cas de redéploiement.
-    """
-    # 1. Vérifier si le secret existe
-    check = subprocess.run(
-        ["kubectl", "get", "secret", secret_name, "-n", namespace],
-        capture_output=True
-    )
+def apply_k8s_template(template_name, context):
+    with open(f"{TEMPLATE_DIR}/{template_name}", 'r') as f:
+        content = f.read()
     
-    if check.returncode == 0:
-        print(f"   🔒 Secret '{secret_name}' existe déjà. On le conserve.")
-        return
-
-    # 2. Construire la commande de création
-    # data_dict est sous la forme {'cle': 'valeur'}
-    cmd = ["kubectl", "create", "secret", "generic", secret_name, "-n", namespace]
-    for key, value in data_dict.items():
-        cmd.append(f"--from-literal={key}={value}")
+    # Remplacement des variables
+    for key, value in context.items():
+        content = content.replace(f"${{{key}}}", str(value))
     
-    # 3. Exécuter
-    print(f"   ✨ Création du secret '{secret_name}'...")
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
-
-def apply_k8s_manifest(manifest_content):
-    process = subprocess.run(
-        ["kubectl", "apply", "-f", "-"],
-        input=manifest_content.encode('utf-8'),
-        capture_output=True
-    )
+    # Application via kubectl
+    process = subprocess.Popen(['kubectl', 'apply', '-f', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    stdout, stderr = process.communicate(input=content)
+    
     if process.returncode != 0:
-        print(f"   [ERREUR] {process.stderr.decode('utf-8')}")
+        print(f"❌ Erreur sur {template_name}: {stderr}")
+        sys.exit(1)
     else:
-        print("   [OK] Appliqué.")
+        print(f"   [OK] {template_name} appliqué.")
 
-def create_namespace(namespace):
-    cmd = f"kubectl create ns {namespace} --dry-run=client -o yaml | kubectl apply -f -"
-    subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
+def create_namespace_if_not_exists(namespace):
+    subprocess.run(f"kubectl create namespace {namespace} --dry-run=client -o yaml | kubectl apply -f -", shell=True, check=True, stdout=subprocess.DEVNULL)
 
 def main():
-    print(f"🚀 Déploiement V2 (Secure) sur {VPS_IP}...")
-    
     config = load_yaml(CLIENTS_FILE)
     
     for client in config['clients']:
         client_name = client['name']
         
-        for env in client['environments']:
-            namespace = f"{client_name}-{env}"
-            print(f"\n--- Client: {client_name} | Env: {env} ---")
+        # Filtre par environnement (Dev ou Prod)
+        if TARGET_ENV not in client['environments']:
+            continue
+
+        print(f"\n--- Client: {client_name} | Env: {TARGET_ENV} ---")
+        namespace = f"{client_name}-{TARGET_ENV}"
+        create_namespace_if_not_exists(namespace)
+        
+        # Contexte global pour les templates
+        context = {
+            "APP_NAME": "", 
+            "CLIENT_NAME": client_name,
+            "ENV": TARGET_ENV,
+            "NAMESPACE": namespace,
+            "VPS_IP": VPS_IP,
+            "DOMAIN_SUFFIX": DOMAIN_SUFFIX # La nouvelle variable magique
+        }
+
+        # Création du secret DB (générique pour l'école)
+        db_secret_cmd = f"kubectl create secret generic {client_name}-db-secret --from-literal=password=rootroot --dry-run=client -o yaml | kubectl apply -n {namespace} -f -"
+        subprocess.run(db_secret_cmd, shell=True, stdout=subprocess.DEVNULL)
+
+        for app in client['apps']:
+            context["APP_NAME"] = app
+            # Exemple d'URL affichée : wordpress-boulangerie-dev.dev.pmi.ovh
+            full_url = f"{app}-{namespace}.{DOMAIN_SUFFIX}"
+            print(f" > Traitement de {app} (URL: {full_url})")
             
-            create_namespace(namespace)
+            apply_k8s_template(f"{app}.yaml", context)
+            apply_k8s_template("mariadb.yaml", context)
             
-            for app in client['apps']:
-                url = f"{app}-{client_name}-{env}.{VPS_IP}.nip.io"
-                print(f" > Traitement de {app} (URL: {url})")
-                print(f" > Traitement de {app}")
+            print(f" > Ajout FileBrowser")
+            apply_k8s_template("filebrowser.yaml", context)
 
-                # --- GESTION DES SECRETS (LA V2 EST ICI) ---
-                
-                # 1. Secret pour la Base de Données (Commun à WP et Presta)
-                # On génère des passwords, mais ils ne seront utilisés que si le secret n'existe pas
-                db_secret_name = f"{app}-db-secret"
-                create_secret_if_not_exists(namespace, db_secret_name, {
-                    "root-password": generate_password(),
-                    "db-password": generate_password()
-                })
-
-                # 2. Secret pour l'Admin (Spécifique PrestaShop)
-                if app == "prestashop":
-                    admin_secret_name = f"{app}-admin-secret"
-                    create_secret_if_not_exists(namespace, admin_secret_name, {
-                        "admin-password": generate_password() # Ou mettre un fix si tu préfères : "Admin123!"
-                    })
-
-                # --- DEPLOIEMENT DES YAML ---
-
-                # A. La Base de Données
-                with open(f"{TEMPLATE_DIR}/mariadb.yaml", 'r') as f:
-                    db_tpl = f.read()
-                apply_k8s_manifest(
-                    db_tpl.replace('${NAMESPACE}', namespace)
-                          .replace('${APP_NAME}', app) 
-                )
-                
-                # B. L'Application
-                app_file = f"{TEMPLATE_DIR}/{app}.yaml"
-                if os.path.exists(app_file):
-                    with open(app_file, 'r') as f:
-                        app_tpl = f.read()
-                    
-                    # On injecte juste l'URL et les Noms, plus de password en clair ici !
-                    apply_k8s_manifest(
-                        app_tpl.replace('${NAMESPACE}', namespace)
-                               .replace('${APP_NAME}', app)
-                               .replace('${URL}', url)
-                    )
-                else:
-                    print(f"   [!] Template {app}.yaml introuvable.")
-
-                # C. L'Ingress
-                with open(f"{TEMPLATE_DIR}/ingress.yaml", 'r') as f:
-                    ing_tpl = f.read()
-                apply_k8s_manifest(
-                    ing_tpl.replace('${NAMESPACE}', namespace)
-                           .replace('${APP_NAME}', app)
-                           .replace('${URL}', url)
-                )
-
-                # D. Le Gestionnaire de Fichiers (FileBrowser)
-                # On génère une URL spécifique : files-app-client-env...
-                fb_url = f"files-{app}-{client_name}-{env}.{VPS_IP}.nip.io"
-                print(f" > Ajout FileBrowser (URL: {fb_url})")
-
-                fb_file = f"{TEMPLATE_DIR}/filebrowser.yaml"
-                if os.path.exists(fb_file):
-                    with open(fb_file, 'r') as f:
-                        fb_tpl = f.read()
-                    
-                    apply_k8s_manifest(
-                        fb_tpl.replace('${NAMESPACE}', namespace)
-                              .replace('${APP_NAME}', app)
-                              .replace('${FILEBROWSER_URL}', fb_url)
-                    )
-                else:
-                    print(f"   [!] Template filebrowser.yaml introuvable.")
-                    
-    print("\n✅ Déploiement sécurisé terminé.")
+    print(f"\n✅ Déploiement {TARGET_ENV.upper()} terminé avec succès.")
 
 if __name__ == "__main__":
     main()

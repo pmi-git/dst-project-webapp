@@ -1,14 +1,15 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: ${APP_NAME}-db-pvc
+  name: ${APP_NAME}-mariadb
   namespace: ${NAMESPACE}
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+  selector:
+    app: ${APP_NAME}-mariadb
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,33 +35,34 @@ spec:
           value: "db_data"
         - name: MYSQL_USER
           value: "user"
-        # --- SECRETS ---
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: ${APP_NAME}-db-secret
-              key: root-password
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: ${APP_NAME}-db-secret
-              key: db-password
+              name: ${CLIENT_NAME}-db-secret
+              key: password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${CLIENT_NAME}-db-secret
+              key: password
+        ports:
+        - containerPort: 3306
         volumeMounts:
-        - name: mariadb-storage
+        - name: db-storage
           mountPath: /var/lib/mysql
       volumes:
-      - name: mariadb-storage
+      - name: db-storage
         persistentVolumeClaim:
           claimName: ${APP_NAME}-db-pvc
 ---
 apiVersion: v1
-kind: Service
+kind: PersistentVolumeClaim
 metadata:
-  name: ${APP_NAME}-mariadb
+  name: ${APP_NAME}-db-pvc
   namespace: ${NAMESPACE}
 spec:
-  selector:
-    app: ${APP_NAME}-mariadb
-  ports:
-    - port: 3306
-      targetPort: 3306
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

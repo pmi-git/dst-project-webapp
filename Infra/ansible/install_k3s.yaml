@@ -1,0 +1,37 @@
+---
+- name: Installation Cluster Prod K3s
+  hosts: prod
+  become: yes  # On passe root pour l'install
+  tasks:
+    - name: Mise à jour des paquets apt
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Installation de curl
+      apt:
+        name: curl
+        state: present
+
+    - name: Installation de K3s (commande officielle)
+      shell: curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /usr/local/bin/k3s # Ne lance pas si k3s existe déjà
+
+    - name: Attendre que le node soit prêt
+      pause:
+        seconds: 10
+
+    - name: Récupération du Kubeconfig (Token)
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: ./kubeconfig_prod.yaml
+        flat: yes
+
+    - name: Correction de l'IP dans le Kubeconfig (Localement)
+      local_action:
+        module: replace
+        path: ./kubeconfig_prod.yaml
+        regexp: '127.0.0.1'
+        replace: '{{ inventory_hostname }}'
+      become: no 

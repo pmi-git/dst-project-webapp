@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}-filebrowser-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: ${APP_NAME}-filebrowser
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,19 +27,16 @@ spec:
       labels:
         app: ${APP_NAME}-filebrowser
     spec:
-      # --- AJOUT DU BLOC MAGIQUE ---
+      # SECURITE : On tourne comme www-data pour avoir les droits sur les fichiers PHP
       securityContext:
-        runAsUser: 33    # On tourne comme www-data
-        runAsGroup: 33   # On appartient au groupe www-data
-        fsGroup: 33      # On force le volume à accepter le groupe 33
-      # -----------------------------
+        runAsUser: 33
+        runAsGroup: 33
+        fsGroup: 33
       containers:
       - name: filebrowser
         image: filebrowser/filebrowser:latest
-        # CORRECTION ICI : On ajoute "-d" devant le chemin
         args: ["-d", "/tmp/database.db"] 
         env:
-        # On met à jour la variable pour qu'elle matche
         - name: FB_DATABASE
           value: "/tmp/database.db"
         - name: FB_ROOT
@@ -40,42 +50,25 @@ spec:
         volumeMounts:
         - name: app-storage
           mountPath: /srv
-        # --- AJOUT 1 : On monte le volume temporaire dans /config ---
+        # Volume temporaire pour éviter l'erreur de permission sur /config
         - name: temp-config
           mountPath: /config
-        # ------------------------------------------------------------
       volumes:
       - name: app-storage
         persistentVolumeClaim:
-          # C'EST ICI LA CLEF : On se branche sur le PVC de l'app (ex: wordpress-pvc)
-          claimName: ${APP_NAME}-pvc 
-      # --- AJOUT 2 : Définition du volume temporaire ---
+          claimName: ${APP_NAME}-pvc
       - name: temp-config
-        emptyDir: {} 
-      # -------------------------------------------------
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ${APP_NAME}-filebrowser-service
-  namespace: ${NAMESPACE}
-spec:
-  selector:
-    app: ${APP_NAME}-filebrowser
-  ports:
-    - port: 80
-      targetPort: 80
+        emptyDir: {}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ${APP_NAME}-filebrowser-ingress
   namespace: ${NAMESPACE}
-  annotations:
-    kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: ${FILEBROWSER_URL} # ex: files-wordpress-boulangerie-dev...
+  # MODIFICATION : Sous-domaine "files-" + Domaine OVH
+  - host: files-${APP_NAME}-${NAMESPACE}.${DOMAIN_SUFFIX}
     http:
       paths:
       - path: /
