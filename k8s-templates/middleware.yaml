@@ -1,0 +1,10 @@
+# Attention : c'est bien traefik.io maintenant !
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: ${NAMESPACE} # créé DANS le namespace du client
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
