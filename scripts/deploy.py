@@ -130,6 +130,9 @@ def main():
             print(f" > Ajout FileBrowser")
             apply_k8s_template("filebrowser.yaml", context)
 
+            print(f" > Ajout phpMyAdmin (URL: db-{url_slug}.{DOMAIN_SUFFIX})")
+            apply_k8s_template("dbadmin.yaml", context)
+
     print(f"\n✅ Déploiement {TARGET_ENV.upper()} terminé avec succès.")
 
 if __name__ == "__main__":

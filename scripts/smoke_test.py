@@ -89,6 +89,12 @@ def main():
                 errors += 1
             tests_run += 1
 
+            # 2. Test de l'URL DBAdmin
+            db_url = f"db-{app}-{client_name}.{DOMAIN_SUFFIX}"
+            if not check_url(db_url):
+                errors += 1
+            tests_run += 1
+
     print("-" * 30)
     if tests_run == 0:
         print("⚠️ Aucun test n'a été exécuté (vérifiez clients.yaml ou la branche).")
