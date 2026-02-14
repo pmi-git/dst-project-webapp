@@ -9,7 +9,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 8080 # Bitnami écoute sur 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: wordpress
-        image: wordpress:latest
+        image: bitnami/wordpress:latest
         resources:
           requests:
             cpu: "100m"
@@ -39,22 +39,34 @@ spec:
             cpu: "500m"
             memory: "512Mi"
         env:
-        - name: WORDPRESS_DB_HOST
+        - name: WORDPRESS_DATABASE_HOST
           value: "${APP_NAME}-mariadb"
-        - name: WORDPRESS_DB_USER
+        - name: WORDPRESS_DATABASE_USER
           value: "user"
-        - name: WORDPRESS_DB_PASSWORD
+        - name: WORDPRESS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: ${CLIENT_NAME}-db-secret
               key: password
-        - name: WORDPRESS_DB_NAME
+        - name: WORDPRESS_DATABASE_NAME
           value: "db_data"
+        
+        # --- AUTO INSTALLATION ---
+        - name: WORDPRESS_USERNAME
+          value: "admin"
+        - name: WORDPRESS_PASSWORD
+          value: "Admin123!" # Mot de passe par défaut
+        - name: WORDPRESS_EMAIL
+          value: "admin@${URL_SLUG}.${DOMAIN_SUFFIX}"
+        - name: WORDPRESS_BLOG_NAME
+          value: "Site ${CLIENT_NAME}"
+        # ---------------------------------
+        
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         volumeMounts:
         - name: app-storage
-          mountPath: /var/www/html
+          mountPath: /bitnami/wordpress # Dossier standard Bitnami
       volumes:
       - name: app-storage
         persistentVolumeClaim:

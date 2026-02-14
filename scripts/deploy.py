@@ -2,6 +2,8 @@ import yaml
 import os
 import subprocess
 import sys
+import secrets
+import string
 
 # --- CONFIGURATION ---
 CLIENTS_FILE = "configs/clients.yaml"
@@ -42,6 +44,21 @@ with open(KUBECONFIG_PATH, "w") as f:
 os.environ["KUBECONFIG"] = KUBECONFIG_PATH
 
 print(f"✅ Cluster {TARGET_ENV.upper()} configuré (IP: {VPS_IP} | Domaine: *.{DOMAIN_SUFFIX})")
+
+def generate_password(length=16):
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for i in range(length))
+
+def create_secret_if_not_exists(namespace, secret_name, data_dict):
+    check = subprocess.run(["kubectl", "get", "secret", secret_name, "-n", namespace], capture_output=True)
+    if check.returncode == 0:
+        print(f"    [SEC] Secret '{secret_name}' existe déjà. Conservation.")
+        return
+    cmd = ["kubectl", "create", "secret", "generic", secret_name, "-n", namespace]
+    for key, value in data_dict.items():
+        cmd.append(f"--from-literal={key}={value}")
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
+    print(f"    [SEC] Secret '{secret_name}' créé avec succès.")
 
 def load_yaml(filepath):
     with open(filepath, 'r') as file:
@@ -108,9 +125,11 @@ def main():
             "DOMAIN_SUFFIX": DOMAIN_SUFFIX
         }
 
-        # Création du secret DB
-        db_secret_cmd = f"kubectl create secret generic {client_name}-db-secret --from-literal=password=rootroot --dry-run=client -o yaml | kubectl apply -n {namespace} -f -"
-        subprocess.run(db_secret_cmd, shell=True, stdout=subprocess.DEVNULL)
+        # --- SÉCURITÉ : Génération du Secret K8S ---
+        create_secret_if_not_exists(namespace, f"{client_name}-db-secret", {
+            "password": generate_password()
+        })
+        # -------------------------------------------
 
         # Force le redirect https
         print(f" > Configuration Middleware HTTPS pour {namespace}")
@@ -123,6 +142,9 @@ def main():
             context["URL_SLUG"] = url_slug
             full_url = f"{url_slug}.{DOMAIN_SUFFIX}"
             print(f" > Traitement de {app} (URL: {full_url})")
+            
+            # --- differenciation uid pts et wp pour filebrowser
+            context["APP_UID"] = "1001" if app == "wordpress" else "33"
             
             apply_k8s_template(f"{app}.yaml", context)
             apply_k8s_template("mariadb.yaml", context)
